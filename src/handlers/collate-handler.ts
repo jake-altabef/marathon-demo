@@ -43,7 +43,8 @@ export const marathonHealthDemoCollate = async (event) => {
         // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
-            if (inference.value != '' && inference.confidence > final_explainability_info[field].confidence) {
+            
+            if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
               logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
               final_inference_result[field] = inference.value;
               final_explainability_info[field] = inference;
@@ -63,6 +64,15 @@ export const marathonHealthDemoCollate = async (event) => {
     throw error;
   }
 };
+
+function isMoreConfidentAndPopulated(inferred, runningBest) {
+  if ((runningBest.value === '' && inferred.value !== '')) {
+    return true;
+  } else if (inferred.value !== '' && inferred.confidence > runningBest.confidence) {
+    return true;
+  }
+  return false;
+}
 
 async function downloadFileFromS3(bucket, key) {
   logger.info('Starting download from s3 from', bucket, key);
