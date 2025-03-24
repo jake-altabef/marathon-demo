@@ -43,7 +43,8 @@ export const marathonHealthDemoCollate = async (event) => {
         // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
-            if (inference.confidence > final_explainability_info[field].confidence) {
+            if (inference.value != '' && inference.confidence > final_explainability_info[field].confidence) {
+              logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
               final_inference_result[field] = inference.value;
               final_explainability_info[field] = inference;
             } 
@@ -82,7 +83,7 @@ async function downloadFileFromS3(bucket, key) {
   }
   const fileBuffer = Buffer.concat(chunks);
   const parsedData = JSON.parse(fileBuffer.toString());
-  console.log('Parsed JSON data:', parsedData);
+  // console.log('Parsed JSON data:', parsedData);
 
   return parsedData;
 }
