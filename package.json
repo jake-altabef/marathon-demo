@@ -1,0 +1,23 @@
+{
+  "name": "marathon-health-demo",
+  "version": "1.0.0",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-bedrock-data-automation": "^3.759.0",
+    "@aws-sdk/client-bedrock-data-automation-runtime": "^3.759.0",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "bunyan": "^1.8.15"
+  },
+  "devDependencies": {
+    "@types/bunyan": "^1.8.11",
+    "serverless-iam-roles-per-function": "^3.2.0",
+    "serverless-plugin-typescript": "^2.1.5"
+  }
+}

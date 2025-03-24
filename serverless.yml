@@ -1,0 +1,115 @@
+service: s3-bedrock-integration
+frameworkVersion: '3'
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-plugin-typescript
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+      - Effect: Allow
+        Action:
+          - 's3:GetObject'
+          - 's3:PutObject'
+          - 's3:ListBucket'
+        Resource:
+          - 'arn:aws:s3:::marathon-health-demo-ingestion-bucket'
+          - 'arn:aws:s3:::marathon-health-demo-ingestion-bucket/*'
+          - 'arn:aws:s3:::marathon-health-demo-results-bucket'
+          - 'arn:aws:s3:::marathon-health-demo-results-bucket/*'
+          - 'arn:aws:s3:::marathon-health-demo-collate-bucket'
+          - 'arn:aws:s3:::marathon-health-demo-collate-bucket/*'
+      - Effect: Allow
+        Action:
+          - 'bedrock:InvokeDataAutomationAsync'
+        Resource: '*'  # Adjust based on your Bedrock project
+      - Effect: Allow
+        Action:
+          - 'logs:CreateLogGroup'
+          - 'logs:CreateLogStream'
+          - 'logs:PutLogEvents'
+        Resource: arn:aws:logs:*:*:*
+
+resources:
+  Resources:
+    MarathonIngestBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: marathon-health-demo-ingestion-bucket
+
+    DemoResultsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: marathon-health-demo-results-bucket
+
+    MarathonCollateBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: marathon-health-demo-collate-bucket
+
+    IngestLambdaInvokePermission:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        Action: "lambda:InvokeFunction"
+        FunctionName: !Ref MarathonHealthDemoIngestLambdaFunction
+        Principal: events.amazonaws.com
+    
+    CollateLambdaInvokePermission:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        Action: "lambda:InvokeFunction"
+        FunctionName: !Ref MarathonHealthDemoCollateLambdaFunction
+        Principal: events.amazonaws.com
+
+functions:
+  MarathonHealthDemoIngest:
+    handler: src/handlers/ingestion-handler.marathonHealthDemoIngest
+    environment:
+      INPUT_BUCKET_NAME: !Ref MarathonIngestBucket
+      OUTPUT_BUCKET_NAME: !Ref DemoResultsBucket
+    events:
+      - eventBridge:
+          eventBus: default
+          pattern:
+            source:
+              - aws.s3
+            detail-type:
+              - 'Object Created'
+            detail:
+              bucket:
+                name:
+                  - !Ref MarathonIngestBucket
+  
+  MarathonHealthDemoCollate:
+    handler: src/handlers/collate-handler.marathonHealthDemoCollate
+    environment:
+      INPUT_BUCKET_NAME: !Ref DemoResultsBucket
+      OUTPUT_BUCKET_NAME: !Ref MarathonCollateBucket
+    events:
+      # - eventBridge:
+      #     eventBus: default
+      #     pattern:
+      #       source:
+      #         - aws.bedrock
+      #       detail-type:
+      #         - 'Bedrock Data Automation Job Succeeded'
+      - eventBridge:
+          eventBus: default
+          pattern:
+            source:
+              - aws.s3
+            detail-type:
+              - 'Object Created'
+            detail:
+              bucket:
+                name:
+                  - !Ref DemoResultsBucket
+              object:
+                key:
+                  - wildcard: '*job_metadata.json'
+                  
