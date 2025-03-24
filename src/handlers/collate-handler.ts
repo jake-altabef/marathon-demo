@@ -1,13 +1,12 @@
 import * as bunyan from 'bunyan';
+import { NodeJsClient } from "@smithy/types";
 import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3'
 
 const INPUT_BUCKET_NAME = process.env.INPUT_BUCKET_NAME;
 const OUTPUT_BUCKET_NAME = process.env.OUTPUT_BUCKET_NAME;
 
 const logger = bunyan.createLogger({ name: 'Marathon Health Demo -- Collate', level: bunyan.DEBUG });
-const S3 = new S3Client({
-  region: 'us-east-1',
-});
+const S3 = new S3Client({region: 'us-east-1'}) as NodeJsClient<S3Client>;;
 
 export const marathonHealthDemoCollate = async (event) => {
   logger.info('Event received:', JSON.stringify(event, null, 2));
@@ -26,38 +25,56 @@ export const marathonHealthDemoCollate = async (event) => {
     const { Contents, KeyCount } = await S3.send(listObjectCommand);
     logger.info('listObject count and contents', KeyCount, Contents);
 
-    const final_inference_result; 
-    const final_explainability_info;
+    let final_inference_result; 
+    let final_explainability_info;
+    
+    if (Contents) {
+      Contents.forEach(async s3Obj => {
+        let resultObj = await downloadFileFromS3(INPUT_BUCKET_NAME, s3Obj.Key)
 
-    Contents.forEach(s3Obj => {
-      const getObjectCommand = new GetObjectCommand({ 'Bucket': INPUT_BUCKET_NAME, 'Prefix': s3Obj.Key })
-      logger.info('listObjectCommand', listObjectCommand);
-      let getObjectResponse = S3.send(getObjectCommand);
-
-      let inference_result = getObjectResponse.Body.final_inference_result;
-      let explainability_info = getObjectResponse.Body.final_explainability_info[0];
-
-      // Initial case
-      if (!final_inference_result) {
-        final_inference_result = inference_result;
-        final_explainability_info = explainability_info;
-      } else {
-      // Compare latest result with best inference
-        for (const field in explainability_info) {
-          let inference = explainability_info[field];
-          if (inference.confidence > final_explainability_info[field].confidence) {
-            final_inference_result[field] = inference.value;
-            final_explainability_info[field] = inference;
-          } 
+        let inference_result = resultObj.inference_result;
+        let explainability_info = resultObj.explainability_info[0];
+  
+        // Initial case
+        if (!final_inference_result) {
+          final_inference_result = inference_result;
+          final_explainability_info = explainability_info;
+        } else {
+        // Compare latest result with best inference
+          for (const field in explainability_info) {
+            let inference = explainability_info[field];
+            if (inference.confidence > final_explainability_info[field].confidence) {
+              final_inference_result[field] = inference.value;
+              final_explainability_info[field] = inference;
+            } 
+          }
         }
-      }
-    });
-    logger.info('final_inference_result', final_inference_result);
-    logger.info('final_explainability_info', final_explainability_info);
-    return final_explainability_info;
+      });
+      logger.info('final_inference_result', final_inference_result);
+      logger.info('final_explainability_info', final_explainability_info);
+      return final_explainability_info;
+    }
+    logger.info('No results found.');
+    return;
 
   } catch (error) {
     logger.error('Error processing file:', error);
     throw error;
   }
 };
+
+async function downloadFileFromS3(bucket, key) {
+  logger.info('Starting download from s3 from', bucket, key);
+
+  const body = (
+      await this.s3Client.send(
+          new GetObjectCommand({
+              Bucket: bucket,
+              Key: key,
+          }),
+      )
+  ).Body;
+
+  logger.info('Retrieved data:', body);
+  return body;
+}
