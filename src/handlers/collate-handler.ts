@@ -29,7 +29,7 @@ export const marathonHealthDemoCollate = async (event) => {
     let final_explainability_info;
     
     if (Contents) {
-      Contents.forEach(async s3Obj => {
+      await Promise.all(Contents.map(async (s3Obj) => {
         let resultObj = await downloadFileFromS3(INPUT_BUCKET_NAME, s3Obj.Key)
 
         let inference_result = resultObj.inference_result;
@@ -49,7 +49,7 @@ export const marathonHealthDemoCollate = async (event) => {
             } 
           }
         }
-      });
+      }));
       logger.info('final_inference_result', final_inference_result);
       logger.info('final_explainability_info', final_explainability_info);
       return final_explainability_info;
@@ -75,6 +75,14 @@ async function downloadFileFromS3(bucket, key) {
       )
   ).Body;
 
-  logger.info('Retrieved data:', body);
-  return body ?? {'inference_result': {}, explainability_info: []};
+  // If Body is a readable stream, convert it to a buffer
+  const chunks = [];
+  for await (const chunk of body) {
+    chunks.push(chunk);
+  }
+  const fileBuffer = Buffer.concat(chunks);
+  const parsedData = JSON.parse(fileBuffer.toString());
+  console.log('Parsed JSON data:', parsedData);
+
+  return parsedData;
 }
