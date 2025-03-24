@@ -37,13 +37,12 @@ export const marathonHealthDemoCollate = async (event) => {
 
         let inference_result = resultObj.inference_result;
         let explainability_info = resultObj.explainability_info[0];
-  
-        // Initial case
-        if (!final_inference_result) {
+      
+        if (!final_inference_result) { // Initial case
           final_inference_result = inference_result;
           final_explainability_info = explainability_info;
-        } else {
-        // Compare latest result with best inference
+
+        } else {  // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
 
