@@ -125,15 +125,12 @@ async function uploadFileToS3(bucket, key, data) {
   logger.info('File Uploaded to', bucket, key)
 } 
 
-function prepareCsvData(jsonData) {
-  // Flatten the JSON data
-  const explainabilityInfo = jsonData.explainability_info[0]; // Assuming only one entry in the array
-
+function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
   const csvData = [];
 
-  Object.keys(explainabilityInfo).forEach((key) => {
-      const info = explainabilityInfo[key];
+  Object.keys(explainabilityJsonData).forEach((key) => {
+      const info = explainabilityJsonData[key];
       const row = {
           field_name: key,
           success: info.success,
