@@ -1,6 +1,7 @@
 import * as bunyan from 'bunyan';
 import { NodeJsClient } from "@smithy/types";
-import { S3Client, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
+const { parse } = require('json2csv');
 
 const INPUT_BUCKET_NAME = process.env.INPUT_BUCKET_NAME;
 const OUTPUT_BUCKET_NAME = process.env.OUTPUT_BUCKET_NAME;
@@ -15,8 +16,10 @@ export const marathonHealthDemoCollate = async (event) => {
   const bucketName = record.bucket.name;
   const objectKey = decodeURIComponent(record.object.key.replace(/\+/g, ' '));
   
-  let filename_index = objectKey.lastIndexOf("job_metadata.json");
-  let resultsBucketPrefix = objectKey.slice(0, filename_index) + '0/custom_output/'; 
+  let metadataIndex = objectKey.lastIndexOf("job_metadata.json");
+  let resultsBucketPrefix = objectKey.slice(0, metadataIndex) + '0/custom_output/';
+  let uploadedFileNameIndex = objectKey.search('/');
+  let uploadedFileName = objectKey.slice(0, uploadedFileNameIndex);
 
   try {
     const listObjectCommand = new ListObjectsV2Command({ 'Bucket': INPUT_BUCKET_NAME, 'Prefix': resultsBucketPrefix });
@@ -43,7 +46,7 @@ export const marathonHealthDemoCollate = async (event) => {
         // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
-            
+
             if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
               logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
               final_inference_result[field] = inference.value;
@@ -54,8 +57,16 @@ export const marathonHealthDemoCollate = async (event) => {
       }));
       logger.info('final_inference_result', final_inference_result);
       logger.info('final_explainability_info', final_explainability_info);
-      return final_explainability_info;
+
+      // Save results to collated bucket
+      let outputObjectKeyPrefix = `${uploadFileToS3}/${new Date().toISOString()}/`;
+      let csvString = prepareCsvData(final_explainability_info);
+      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString);
+      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info);
+
+      return;
     }
+
     logger.info('No results found.');
     return;
 
@@ -90,10 +101,52 @@ async function downloadFileFromS3(bucket, key) {
   const chunks = [];
   for await (const chunk of body) {
     chunks.push(chunk);
-  }
+  };
   const fileBuffer = Buffer.concat(chunks);
   const parsedData = JSON.parse(fileBuffer.toString());
   // console.log('Parsed JSON data:', parsedData);
 
   return parsedData;
+}
+
+async function uploadFileToS3(bucket, key, data) {
+  logger.info('Trying to upload file to s3 at', bucket, key);
+
+  const reponse = (
+    await S3.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: JSON.stringify(data),
+        ContentType: 'application/json'
+      })
+    )
+  );
+
+  logger.info('File Uploaded to', bucket, key)
+} 
+
+function prepareCsvData(jsonData) {
+  // Flatten the JSON data
+  const explainabilityInfo = jsonData.explainability_info[0]; // Assuming only one entry in the array
+
+  // Create an array of objects with the relevant fields
+  const csvData = [];
+
+  Object.keys(explainabilityInfo).forEach((key) => {
+      const info = explainabilityInfo[key];
+      const row = {
+          field_name: key,
+          success: info.success,
+          confidence: info.confidence,
+          value: info.value,
+      };
+      csvData.push(row);
+  });
+
+  // Convert to CSV
+  const csv = parse(csvData);
+  logger.info("Converted CSV data", csv);
+
+  return csv;
 }
