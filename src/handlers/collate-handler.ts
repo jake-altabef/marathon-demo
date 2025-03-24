@@ -67,7 +67,7 @@ async function downloadFileFromS3(bucket, key) {
   logger.info('Starting download from s3 from', bucket, key);
 
   const body = (
-      await this.s3Client.send(
+      await S3.send(
           new GetObjectCommand({
               Bucket: bucket,
               Key: key,
@@ -76,5 +76,5 @@ async function downloadFileFromS3(bucket, key) {
   ).Body;
 
   logger.info('Retrieved data:', body);
-  return body;
+  return body ?? {'inference_result': {}, explainability_info: []};
 }
