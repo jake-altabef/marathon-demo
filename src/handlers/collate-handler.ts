@@ -60,8 +60,8 @@ export const marathonHealthDemoCollate = async (event) => {
       // Save results to collated bucket
       let outputObjectKeyPrefix = `${uploadedFileName}/${new Date().toISOString()}/`;
       let csvString = await prepareCsvData(final_explainability_info);
-      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString);
-      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info);
+      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString, 'text/csv');
+      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info, 'application/json');
 
       return;
     }
@@ -108,7 +108,7 @@ async function downloadFileFromS3(bucket, key) {
   return parsedData;
 }
 
-async function uploadFileToS3(bucket, key, data) {
+async function uploadFileToS3(bucket, key, data, contentType) {
   logger.info('Trying to upload file to s3 at', bucket, key);
 
   const reponse = (
@@ -117,7 +117,7 @@ async function uploadFileToS3(bucket, key, data) {
         Bucket: bucket,
         Key: key,
         Body: JSON.stringify(data),
-        ContentType: 'application/json'
+        ContentType: contentType
       })
     )
   );
