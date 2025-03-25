@@ -1,7 +1,7 @@
 import * as bunyan from 'bunyan';
 import { NodeJsClient } from "@smithy/types";
 import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
-const { parse } = require('json2csv');
+let converter = require('json-2-csv');
 
 const INPUT_BUCKET_NAME = process.env.INPUT_BUCKET_NAME;
 const OUTPUT_BUCKET_NAME = process.env.OUTPUT_BUCKET_NAME;
@@ -59,7 +59,7 @@ export const marathonHealthDemoCollate = async (event) => {
 
       // Save results to collated bucket
       let outputObjectKeyPrefix = `${uploadedFileName}/${new Date().toISOString()}/`;
-      let csvString = prepareCsvData(final_explainability_info);
+      let csvString = await prepareCsvData(final_explainability_info);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info);
 
@@ -125,7 +125,7 @@ async function uploadFileToS3(bucket, key, data) {
   logger.info('File Uploaded to', bucket, key)
 } 
 
-function prepareCsvData(explainabilityJsonData) {
+async function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
   const csvData = [];
 
@@ -141,7 +141,7 @@ function prepareCsvData(explainabilityJsonData) {
   });
 
   // Convert to CSV
-  const csv = parse(csvData);
+  const csv = await converter.json2csv(csvData);
   logger.info("Converted CSV data", csv);
 
   return csv;
