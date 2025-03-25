@@ -58,7 +58,7 @@ export const marathonHealthDemoCollate = async (event) => {
       logger.info('final_explainability_info', final_explainability_info);
 
       // Save results to collated bucket
-      let outputObjectKeyPrefix = `${uploadFileToS3}/${new Date().toISOString()}/`;
+      let outputObjectKeyPrefix = `${uploadedFileName}/${new Date().toISOString()}/`;
       let csvString = prepareCsvData(final_explainability_info);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info);
