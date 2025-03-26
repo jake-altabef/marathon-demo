@@ -58,7 +58,7 @@ export const marathonHealthDemoCollate = async (event) => {
 
       // Save results to collated bucket
       let outputObjectKeyPrefix = `${uploadedFileName}/${new Date().toISOString()}/`;
-      let csvString = await prepareCsvData(final_explainability_info);
+      let csvString = prepareCsvData(final_explainability_info);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString, 'text/csv');
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info, 'application/json');
 
@@ -127,14 +127,18 @@ async function uploadFileToS3(bucket, key, data, contentType) {
 function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
   let csvString = '';
-  csvString = csvString.concat('fieldName,', 'value,', 'success,', 'confidence', '\n');
+  csvString = csvString.concat('fieldName,', 'value,', 'success,', 'confidence,', 'page', '\n');
 
   Object.keys(explainabilityJsonData).forEach((key) => {
     const info = explainabilityJsonData[key];
-    csvString = csvString.concat(`${key},`,`${info.value},`,`${info.success},`,`${info.confidence}`, '\n');
+    let value = info.value.replace(',','');
+    let confidence = Math.trunc(info.confidence * 100);
+    let page = info?.geometry?.[0].page ?? '';
+    
+    csvString = csvString.concat(`${key},`,`${value},`,`${info.success},`,`${confidence},`, `${page}`, '\n');
   });
 
   // Convert to CSV
-  logger.info("Converted CSV data", csvString);
+  console.log("Converted CSV data", csvString);
   return csvString;
 }
