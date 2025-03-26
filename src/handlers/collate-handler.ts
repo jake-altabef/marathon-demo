@@ -131,7 +131,7 @@ function prepareCsvData(explainabilityJsonData) {
 
   Object.keys(explainabilityJsonData).forEach((key) => {
     const info = explainabilityJsonData[key];
-    let value = info.value.replace(',','');
+    let value = info.value.replace(/,/g, '');
     let confidence = Math.trunc(info.confidence * 100);
     let page = info?.geometry?.[0].page ?? '';
 
