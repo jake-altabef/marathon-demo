@@ -124,14 +124,14 @@ async function uploadFileToS3(bucket, key, data, contentType) {
   logger.info('File Uploaded to', bucket, key)
 } 
 
-async function prepareCsvData(explainabilityJsonData) {
+function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
   let csvString = '';
-  csvString.concat('fieldName,', 'value,', 'success,', 'confidence', '\n');
+  csvString = csvString.concat('fieldName,', 'value,', 'success,', 'confidence', '\n');
 
   Object.keys(explainabilityJsonData).forEach((key) => {
     const info = explainabilityJsonData[key];
-    csvString.concat(`${key},`,`${info.value},`,`${info.success},`,`${info.confidence}`, '\n');
+    csvString = csvString.concat(`${key},`,`${info.value},`,`${info.success},`,`${info.confidence}`, '\n');
   });
 
   // Convert to CSV
