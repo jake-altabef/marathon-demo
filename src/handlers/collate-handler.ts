@@ -115,7 +115,7 @@ async function uploadFileToS3(bucket, key, data, contentType) {
       new PutObjectCommand({
         Bucket: bucket,
         Key: key,
-        Body: JSON.stringify(data),
+        Body: data,
         ContentType: contentType
       })
     )
@@ -126,8 +126,7 @@ async function uploadFileToS3(bucket, key, data, contentType) {
 
 function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
-  let csvString = '';
-  csvString = csvString.concat('fieldName,', 'value,', 'success,', 'confidence,', 'page', '\n');
+  let csvString = 'fieldName,value,success,confidence,page\r\n';
 
   Object.keys(explainabilityJsonData).forEach((key) => {
     const info = explainabilityJsonData[key];
@@ -135,7 +134,7 @@ function prepareCsvData(explainabilityJsonData) {
     let confidence = Math.trunc(info.confidence * 100);
     let page = info?.geometry?.[0].page ?? '';
 
-    csvString = csvString.concat(`${key},`,`${value},`,`${info.success},`,`${confidence},`, `${page}`, '\r\n');
+    csvString += `${key},${value},${info.success},${confidence},${page}\r\n`;
   });
 
   // Convert to CSV
