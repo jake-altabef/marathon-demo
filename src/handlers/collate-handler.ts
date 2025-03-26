@@ -130,18 +130,24 @@ async function prepareCsvData(explainabilityJsonData) {
   const csvData = [];
 
   Object.keys(explainabilityJsonData).forEach((key) => {
-      const info = explainabilityJsonData[key];
-      const row = {
-          field_name: key,
-          success: info.success,
-          confidence: info.confidence,
-          value: info.value,
-      };
-      csvData.push(row);
+    const info = explainabilityJsonData[key];
+    const row = {
+      field_name: key,
+      value: info.value,
+      success: info.success,
+      confidence: info.confidence,
+    };
+    csvData.push(row);
   });
 
+  let options = {
+    'delimiter': {
+      'eol': '\r'
+    }
+  };
+
   // Convert to CSV
-  const csv = await converter.json2csv(csvData);
+  const csv = await converter.json2csv(csvData, options);
   logger.info("Converted CSV data", csv);
 
   return csv;
