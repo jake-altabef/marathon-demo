@@ -1,7 +1,6 @@
 import * as bunyan from 'bunyan';
 import { NodeJsClient } from "@smithy/types";
 import { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
-let converter = require('json-2-csv');
 
 const INPUT_BUCKET_NAME = process.env.INPUT_BUCKET_NAME;
 const OUTPUT_BUCKET_NAME = process.env.OUTPUT_BUCKET_NAME;
@@ -127,30 +126,15 @@ async function uploadFileToS3(bucket, key, data, contentType) {
 
 async function prepareCsvData(explainabilityJsonData) {
   // Create an array of objects with the relevant fields
-  const csvData = [];
+  let csvString = '';
+  csvString.concat('fieldName,', 'value,', 'success,', 'confidence', '\n');
 
   Object.keys(explainabilityJsonData).forEach((key) => {
     const info = explainabilityJsonData[key];
-    const row = {
-      field_name: key,
-      value: info.value,
-      success: info.success,
-      confidence: info.confidence,
-    };
-    csvData.push(row);
+    csvString.concat(`${key},`,`${info.value},`,`${info.success},`,`${info.confidence}`, '\n');
   });
 
-  let options = {
-    'delimiter': {
-      'eol': '\r'
-    }
-  };
-
-  logger.info("rawCsvData", csvData);
-
   // Convert to CSV
-  const csv = await converter.json2csv(csvData, options);
-  logger.info("Converted CSV data", csv);
-
-  return csv;
+  logger.info("Converted CSV data", csvString);
+  return csvString;
 }
