@@ -125,10 +125,10 @@ async function uploadFileToS3(bucket, key, data, contentType) {
 } 
 
 function prepareCsvData(explainabilityJsonData) {
-  // Create an array of objects with the relevant fields
+  let sortedKeys = Object.keys(explainabilityJsonData).sort();
   let csvString = 'fieldName,value,success,confidence,page\r\n';
 
-  Object.keys(explainabilityJsonData).forEach((key) => {
+  sortedKeys.forEach((key) => {
     const info = explainabilityJsonData[key];
     let value = info.value.replace(/,/g, '');
     let confidence = Math.trunc(info.confidence * 100);
