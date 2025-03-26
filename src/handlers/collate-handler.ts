@@ -146,6 +146,8 @@ async function prepareCsvData(explainabilityJsonData) {
     }
   };
 
+  logger.info("rawCsvData", csvData);
+
   // Convert to CSV
   const csv = await converter.json2csv(csvData, options);
   logger.info("Converted CSV data", csv);
