@@ -60,7 +60,7 @@ export const marathonHealthDemoCollate = async (event) => {
       let outputObjectKeyPrefix = `${uploadedFileName}/${new Date().toISOString()}/`;
       let csvString = prepareCsvData(final_explainability_info);
       await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'InferenceResults.csv', csvString, 'text/csv');
-      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', final_explainability_info, 'application/json');
+      await uploadFileToS3(OUTPUT_BUCKET_NAME, outputObjectKeyPrefix+'ExplainabilityInfo.json', JSON.stringify(final_explainability_info), 'application/json');
 
       return;
     }
