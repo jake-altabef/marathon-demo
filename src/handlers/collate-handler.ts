@@ -134,8 +134,8 @@ function prepareCsvData(explainabilityJsonData) {
     let value = info.value.replace(',','');
     let confidence = Math.trunc(info.confidence * 100);
     let page = info?.geometry?.[0].page ?? '';
-    
-    csvString = csvString.concat(`${key},`,`${value},`,`${info.success},`,`${confidence},`, `${page}`, '\n');
+
+    csvString = csvString.concat(`${key},`,`${value},`,`${info.success},`,`${confidence},`, `${page}`, '\r\n');
   });
 
   // Convert to CSV
