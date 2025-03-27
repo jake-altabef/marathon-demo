@@ -3,23 +3,25 @@
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 
-interface CsvTableProps {
-  csvUrl: string;
-}
+type Props = { csvKey: string };
 
-const CsvTable: React.FC<CsvTableProps> = ({ csvUrl }) => {
+const CsvTable = ({ csvKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
 
   useEffect(() => {
-    const fetchCsv = async () => {
-      const response = await fetch(csvUrl);
-      const csvText = await response.text();
+    const fetchCsvUrl = async () => {
+      const response = await fetch(`/api/csv?fileKey=${csvKey}`);
+      const { url } = await response.json();
+
+      const csvResponse = await fetch(url);
+      const csvText = await csvResponse.text();
       const parsed = Papa.parse(csvText, { skipEmptyLines: true });
+
       setData(parsed.data as string[][]);
     };
 
-    fetchCsv();
-  }, [csvUrl]);
+    fetchCsvUrl();
+  }, [csvKey]);
 
   return (
     <div className="w-full overflow-x-auto border rounded-lg p-2">
@@ -28,9 +30,7 @@ const CsvTable: React.FC<CsvTableProps> = ({ csvUrl }) => {
           <thead className="bg-gray-200">
             <tr>
               {data[0].map((col, idx) => (
-                <th key={idx} className="border border-gray-400 p-2">
-                  {col}
-                </th>
+                <th key={idx} className="border border-gray-400 p-2">{col}</th>
               ))}
             </tr>
           </thead>
@@ -38,9 +38,7 @@ const CsvTable: React.FC<CsvTableProps> = ({ csvUrl }) => {
             {data.slice(1).map((row, idx) => (
               <tr key={idx} className="hover:bg-gray-100">
                 {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="border border-gray-400 p-2">
-                    {cell}
-                  </td>
+                  <td key={cellIdx} className="border border-gray-400 p-2">{cell}</td>
                 ))}
               </tr>
             ))}

@@ -2,28 +2,33 @@
 
 import { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-interface PdfViewerProps {
-  pdfUrl: string;
-}
+type Props = { pdfKey: string };
 
-const PdfViewer: React.FC<PdfViewerProps> = ({ pdfUrl }) => {
-  const [numPages, setNumPages] = useState<number | null>(null);
-  
+const PdfViewer = ({ pdfKey }: Props) => {
+  const [pdfUrl, setPdfUrl] = useState("");
+
+  useEffect(() => {
+    const fetchPdfUrl = async () => {
+      const response = await fetch(`/api/pdf?fileKey=${pdfKey}`);
+      const data = await response.json();
+      setPdfUrl(data.url);
+    };
+
+    fetchPdfUrl();
+  }, [pdfKey]);
+
   return (
     <div className="w-full h-[80vh] overflow-y-auto border rounded-lg p-2">
-      <Document
-        file={pdfUrl}
-        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-      >
-        {Array.from(new Array(numPages), (_, index) => (
-          <Page key={index} pageNumber={index + 1} width={600} />
-        ))}
-      </Document>
+      {pdfUrl ? (
+        <Document file={pdfUrl}>
+          <Page pageNumber={1} width={600} />
+        </Document>
+      ) : (
+        <p>Loading PDF...</p>
+      )}
     </div>
   );
 };
