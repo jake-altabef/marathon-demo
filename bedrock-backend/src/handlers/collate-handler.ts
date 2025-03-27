@@ -46,7 +46,7 @@ export const marathonHealthDemoCollate = async (event) => {
             let inference = explainability_info[field];
             final_inference_result[field] = final_inference_result[field].concat("|", inference.value);
             
-            if (!final_explainability_info[field].isArray()) {
+            if (!Array.isArray(final_explainability_info[field])) {
               final_explainability_info[field] = [final_explainability_info[field], inference];
             } else {
               final_explainability_info[field].push(inference);
@@ -139,8 +139,8 @@ function prepareCsvData(explainabilityJsonData) {
 
   sortedKeys.forEach((key) => {
     const info = explainabilityJsonData[key];
-    if (info.isArray()) {
-      info.foreach(instance => {
+    if (Array.isArray(info)) {
+      info.forEach(instance => {
         value += instance.value.replace(/,/g,'') + '|';
         confidence += Math.trunc(instance.confidence * 100) + '|';
         page += instance?.geometry?.[0].page ?? '' + '|';
