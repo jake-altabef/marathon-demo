@@ -8,7 +8,7 @@ type FileOption = {
 };
 
 type Props = {
-  onSelect: (pdfKey: string, csvKey: string) => void;
+  onSelect: (pdfKey: string) => void;
 };
 
 const FileSelector = ({ onSelect }: Props) => {
@@ -22,13 +22,12 @@ const FileSelector = ({ onSelect }: Props) => {
       
       // Split into PDFs and CSVs
       const pdfFiles = data.filter((file: FileOption) => file.key.endsWith(".pdf"));
-      const csvFiles = data.filter((file: FileOption) => file.key.endsWith(".csv"));
 
-      setFiles({ pdfs: pdfFiles, csvs: csvFiles });
+      setFiles(pdfFiles);
 
-      if (pdfFiles.length > 0 && csvFiles.length > 0) {
+      if (pdfFiles.length > 0 && !selectedPdf) {
         setSelectedPdf(pdfFiles[0].key);
-        onSelect(pdfFiles[0].key, csvFiles[0].key);
+        onSelect(pdfFiles[0].key);
       }
     };
 
@@ -36,7 +35,9 @@ const FileSelector = ({ onSelect }: Props) => {
   }, [onSelect]);
 
   const handlePdfChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedPdf(event.target.value);
+    const pdfKey = event.target.value;
+    setSelectedPdf(pdfKey);
+    onSelect(pdfKey);
   };
 
   return (
@@ -44,7 +45,7 @@ const FileSelector = ({ onSelect }: Props) => {
       <div>
         <label className="block text-sm font-medium">Select PDF:</label>
         <select className="border rounded p-2" value={selectedPdf ?? ""} onChange={handlePdfChange}>
-          {files.pdfs?.map((file) => (
+          {files?.map((file) => (
             <option key={file.key} value={file.key}>{file.name}</option>
           ))}
         </select>

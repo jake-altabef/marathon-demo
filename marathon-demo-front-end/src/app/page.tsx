@@ -6,21 +6,20 @@ import CsvTable from "./components/CsvTable";
 
 export default function Dashboard() {
   const [pdfKey, setPdfKey] = useState("");
-  const [csvKey, setCsvKey] = useState("");
 
   return (
     <div className="p-4 space-y-4">
-      <FileSelector onSelect={(pdf, csv) => { setPdfKey(pdf); setCsvKey(csv); }} />
-
+      <FileSelector onSelect={(pdf) => { setPdfKey(pdf)}} />
+      
       <div className="flex space-x-4">
         <div className="w-1/2 border rounded-lg p-4 shadow">
           <h2 className="text-xl font-bold mb-2">PDF Viewer</h2>
           <PdfViewer pdfKey={pdfKey} />
         </div>
-        <div className="w-1/2 border rounded-lg p-4 shadow">
+        {/* <div className="w-1/2 border rounded-lg p-4 shadow">
           <h2 className="text-xl font-bold mb-2">CSV Data</h2>
           <CsvTable csvKey={csvKey} />
-        </div>
+        </div> */}
       </div>
     </div>
   );

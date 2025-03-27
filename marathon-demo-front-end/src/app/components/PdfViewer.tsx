@@ -21,15 +21,18 @@ const PdfViewer = ({ pdfKey }: Props) => {
   }, [pdfKey]);
 
   return (
-    <div className="w-full h-[80vh] overflow-y-auto border rounded-lg p-2">
-      {pdfUrl ? (
-        <Document file={pdfUrl}>
-          <Page pageNumber={1} width={600} />
-        </Document>
-      ) : (
-        <p>Loading PDF...</p>
-      )}
+    <div>
+      <div className="w-full h-[80vh] overflow-y-auto border rounded-lg p-2">
+        {pdfUrl ? (
+          <Document file={pdfUrl}>
+            <Page pageNumber={1} width={600} />
+          </Document>
+        ) : (
+          <p>Loading PDF...</p>
+        )}
+      </div>
     </div>
+    
   );
 };
 
