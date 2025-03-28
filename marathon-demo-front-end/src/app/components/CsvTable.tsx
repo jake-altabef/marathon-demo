@@ -8,12 +8,14 @@ type Props = {
   resultKey: string;
 };
 
+const FILE_NAME = "InferenceResults.csv"
+
 const CsvTable = ({ pdfKey, resultKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
 
   useEffect(() => {
     const fetchCsvUrl = async () => {
-      let fileKey = `${pdfKey}/${resultKey}`
+      let fileKey = `${pdfKey}/${resultKey}/${FILE_NAME}`
       const response = await fetch(`/api/csv?fileKey=${fileKey}`);
       const { url } = await response.json();
 
@@ -25,7 +27,7 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
     };
 
     fetchCsvUrl();
-  }, [pdfKey]);
+  }, [pdfKey, resultKey]);
 
   return (
     <div className="w-full overflow-x-auto">
