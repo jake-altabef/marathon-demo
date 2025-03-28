@@ -12,11 +12,23 @@ const PdfViewer = ({ pdfKey }: Props) => {
 
   useEffect(() => {
     const fetchPdfUrl = async () => {
+      if (!pdfKey) return;
+      
       const response = await fetch(`/api/pdf?fileKey=${pdfKey}`);
       const data = await response.json();
-      setPdfUrl(data.url);
+      
+      if (!data.url) return;
+      
+      try {
+        const fileResponse = await fetch(data.url);
+        const blob = await fileResponse.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        setPdfUrl(blobUrl);
+      } catch (error) {
+        console.error("Error fetching PDF:", error);
+      }
     };
-
+  
     fetchPdfUrl();
   }, [pdfKey]);
 
