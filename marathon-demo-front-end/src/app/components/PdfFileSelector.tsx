@@ -39,10 +39,10 @@ const PdfFileSelector = ({ onSelect }: Props) => {
   };
 
   return (
-    <div className="mb-4 flex space-x-4">
+    <div className="mb-4 flex space-x-4 overflow-x-hidden">
       <div>
-        <label className="block text-sm font-medium">Select PDF:</label>
-        <select className="border rounded p-2" value={selectedPdf ?? ""} onChange={handlePdfChange}>
+        <label className="block text-xl font-bold font-large">Select PDF:</label>
+        <select className="border rounded p-2 bg-white" value={selectedPdf ?? ""} onChange={handlePdfChange}>
           {files?.map((file) => (
             <option key={file.key} value={file.key}>{file.name}</option>
           ))}

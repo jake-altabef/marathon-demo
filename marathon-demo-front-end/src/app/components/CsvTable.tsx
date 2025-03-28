@@ -30,9 +30,9 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
   }, [pdfKey, resultKey]);
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-scroll overflow-y-scroll">
       {data.length > 0 ? (
-        <table className="w-full border-collapse border border-gray-300">
+        <table className="w-full border-collapse border border-gray-300 bg-white">
           <thead className="bg-gray-200">
             <tr>
               {data[0].map((col, idx) => (

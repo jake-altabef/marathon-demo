@@ -46,8 +46,8 @@ const ResultFileSelector = ({ onSelect, pdfKey }: Props) => {
   return (
     <div className="mb-4 flex space-x-4">
       <div>
-        <label className="block text-sm font-medium">Select Inference Result Set:</label>
-        <select className="border rounded p-2" value={selectedDate ?? ""} onChange={handleResultSetChange}>
+        <label className="block text-xl font-bold font-large">Select Inference Result Set:</label>
+        <select className="border rounded p-2 bg-white" value={selectedDate ?? ""} onChange={handleResultSetChange}>
           {dates?.map((date) => (
             <option key={date} value={date}>{date}</option>
           ))}
