@@ -22,10 +22,14 @@ export async function GET(req: NextRequest) {
 
   try {
     // Grab list of files that have been uploaded.
-    let params = { Bucket: bucketName };
-    // if (prefix) params[]
+    let params: { Bucket: string, Prefix: string|undefined } = {
+      Bucket: bucketName,
+      Prefix: undefined
+    };
 
-    const command = new ListObjectsV2Command({ Bucket: bucketName });
+    if (prefix) params.Prefix = prefix;
+
+    const command = new ListObjectsV2Command(params);
     const { Contents } = await s3.send(command);
 
     // Process and map the file list

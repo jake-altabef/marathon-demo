@@ -11,7 +11,7 @@ type Props = {
   onSelect: (pdfKey: string) => void;
 };
 
-const FileSelector = ({ onSelect }: Props) => {
+const PdfFileSelector = ({ onSelect }: Props) => {
   const [files, setFiles] = useState<FileOption[]>([]);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
 
@@ -19,8 +19,6 @@ const FileSelector = ({ onSelect }: Props) => {
     const fetchFiles = async () => {
       const response = await fetch("/api/listFiles?bucket=ingest");
       const data = await response.json();
-      
-      // Split into PDFs and CSVs
       const pdfFiles = data.filter((file: FileOption) => file.key.endsWith(".pdf"));
 
       setFiles(pdfFiles);
@@ -54,4 +52,4 @@ const FileSelector = ({ onSelect }: Props) => {
   );
 };
 
-export default FileSelector;
+export default PdfFileSelector;

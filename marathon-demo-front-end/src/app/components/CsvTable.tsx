@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 
-type Props = { pdfKey: string };
+type Props = { 
+  pdfKey: string;
+  resultKey: string;
+};
 
-const CsvTable = ({ pdfKey }: Props) => {
+const CsvTable = ({ pdfKey, resultKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
 
   useEffect(() => {
     const fetchCsvUrl = async () => {
-      const response = await fetch(`/api/csv?fileKey=${pdfKey}`);
+      let fileKey = `${pdfKey}/${resultKey}`
+      const response = await fetch(`/api/csv?fileKey=${fileKey}`);
       const { url } = await response.json();
 
       const csvResponse = await fetch(url);
