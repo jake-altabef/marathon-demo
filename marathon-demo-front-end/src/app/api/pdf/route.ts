@@ -8,7 +8,6 @@ const INGEST_BUCKET = process.env.BEDROCK_INGEST_BUCKET!;
 export async function GET(req: NextRequest) {
   // Extract fileKey from the URL search params
   const fileKey = req.nextUrl.searchParams.get("fileKey");
-  console.log('JAKE LOOK HERE', fileKey);
 
   if (!fileKey || typeof fileKey !== "string") {
     return NextResponse.json({ error: "Missing or invalid file key" }, { status: 400 });

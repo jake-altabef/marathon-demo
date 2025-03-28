@@ -17,7 +17,7 @@ const FileSelector = ({ onSelect }: Props) => {
 
   useEffect(() => {
     const fetchFiles = async () => {
-      const response = await fetch("/api/listFiles");
+      const response = await fetch("/api/listFiles?bucket=ingest");
       const data = await response.json();
       
       // Split into PDFs and CSVs

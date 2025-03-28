@@ -1,50 +1,105 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import React, { useEffect, useRef, useState } from 'react';
+import WebViewer from '@pdftron/webviewer';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-type Props = { pdfKey: string };
+type Props = { 
+  pdfKey: string 
+};
 
 const PdfViewer = ({ pdfKey }: Props) => {
-  const [pdfUrl, setPdfUrl] = useState("");
+  const viewer = useRef(null);
+  const instanceRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPdfUrl = async () => {
-      if (!pdfKey) return;
-      
-      const response = await fetch(`/api/pdf?fileKey=${pdfKey}`);
-      const data = await response.json();
-      
-      if (!data.url) return;
+    const initializeViewer = async () => {
+      // Clear previous viewer if it exists
+      if (viewer.current) {
+        viewer.current.innerHTML = '';
+      }
+
+      // Reset states
+      setIsLoading(true);
+      setError(null);
+
+      if (!pdfKey) {
+        setError('No PDF key provided');
+        setIsLoading(false);
+        return;
+      }
       
       try {
-        const fileResponse = await fetch(data.url);
-        const blob = await fileResponse.blob();
-        const blobUrl = URL.createObjectURL(blob);
-        setPdfUrl(blobUrl);
+        const response = await fetch(`/api/pdf?fileKey=${pdfKey}`);
+        const data = await response.json();
+        
+        if (!data.url) {
+          setError('Could not retrieve PDF URL');
+          setIsLoading(false);
+          return;
+        }
+
+        if (viewer.current) {
+          const instance = await WebViewer({
+            path: '/webviewer/lib',
+            initialDoc: data.url,
+            disabledElements: [
+              'header',
+              'toolbarLeft',
+              'toolbarRight',
+              'leftPanel',
+              'searchPanel',
+              'menuButton',
+              'annotationToolbarButton'
+            ],
+            fullAPI: false,
+            showLocalFilePicker: false,
+            enableAnnotations: false,
+            enableMeasurement: false,
+            documentType: 'pdf'
+          }, viewer.current);
+
+          // Store the instance for potential future reference
+          instanceRef.current = instance;
+
+          const { documentViewer } = instance.Core;
+
+          documentViewer.addEventListener('documentLoaded', () => {
+            setIsLoading(false);
+          });
+        }
       } catch (error) {
-        console.error("Error fetching PDF:", error);
+        console.error('Error fetching or loading PDF:', error);
+        setError('Failed to load PDF');
+        setIsLoading(false);
       }
     };
-  
-    fetchPdfUrl();
-  }, [pdfKey]);
+
+    initializeViewer();
+
+    // Cleanup function
+    return () => {
+      // Clear the viewer container
+      if (viewer.current) {
+        viewer.current.innerHTML = '';
+      }
+    };
+  }, [pdfKey]);  // Runs every time pdfKey changes
 
   return (
-    <div>
-      <div className="w-full h-[80vh] overflow-y-auto border rounded-lg p-2">
-        {pdfUrl ? (
-          <Document file={pdfUrl}>
-            <Page pageNumber={1} width={600} />
-          </Document>
-        ) : (
-          <p>Loading PDF...</p>
-        )}
-      </div>
+    <div className="w-full h-[80vh] overflow-y-auto">
+      {isLoading && <p>Loading PDF...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+      <div 
+        ref={viewer} 
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          display: isLoading ? 'none' : 'block' 
+        }} 
+      />
     </div>
-    
   );
 };
 

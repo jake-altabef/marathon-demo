@@ -13,13 +13,11 @@ export default function Dashboard() {
       
       <div className="flex space-x-4">
         <div className="w-1/2 border rounded-lg p-4 shadow">
-          <h2 className="text-xl font-bold mb-2">PDF Viewer</h2>
           <PdfViewer pdfKey={pdfKey} />
         </div>
-        {/* <div className="w-1/2 border rounded-lg p-4 shadow">
-          <h2 className="text-xl font-bold mb-2">CSV Data</h2>
-          <CsvTable csvKey={csvKey} />
-        </div> */}
+        <div className="w-1/2 border rounded-lg p-4 shadow">
+          <CsvTable pdfKey={pdfKey} />
+        </div>
       </div>
     </div>
   );

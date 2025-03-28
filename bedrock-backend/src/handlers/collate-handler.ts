@@ -109,7 +109,7 @@ async function downloadFileFromS3(bucket, key) {
   };
   const fileBuffer = Buffer.concat(chunks);
   const parsedData = JSON.parse(fileBuffer.toString());
-  // console.log('Parsed JSON data:', parsedData);
+  // logger.info('Parsed JSON data:', parsedData);
 
   return parsedData;
 }
@@ -155,6 +155,6 @@ function prepareCsvData(explainabilityJsonData) {
   });
 
   // Convert to CSV
-  console.log("Converted CSV data", csvString);
+  logger.info("Converted CSV data", csvString);
   return csvString;
 }

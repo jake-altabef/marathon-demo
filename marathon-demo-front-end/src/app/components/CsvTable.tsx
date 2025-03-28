@@ -3,14 +3,14 @@
 import { useEffect, useState } from "react";
 import Papa from "papaparse";
 
-type Props = { csvKey: string };
+type Props = { pdfKey: string };
 
-const CsvTable = ({ csvKey }: Props) => {
+const CsvTable = ({ pdfKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
 
   useEffect(() => {
     const fetchCsvUrl = async () => {
-      const response = await fetch(`/api/csv?fileKey=${csvKey}`);
+      const response = await fetch(`/api/csv?fileKey=${pdfKey}`);
       const { url } = await response.json();
 
       const csvResponse = await fetch(url);
@@ -21,10 +21,10 @@ const CsvTable = ({ csvKey }: Props) => {
     };
 
     fetchCsvUrl();
-  }, [csvKey]);
+  }, [pdfKey]);
 
   return (
-    <div className="w-full overflow-x-auto border rounded-lg p-2">
+    <div className="w-full overflow-x-auto">
       {data.length > 0 ? (
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200">

@@ -5,9 +5,27 @@ const s3 = new S3Client({ region: process.env.AWS_REGION });
 const INGEST_BUCKET = process.env.BEDROCK_INGEST_BUCKET!;
 const COLLATE_BUCKET = process.env.BEDROCK_COLLATE_BUCKET!;
 
-export async function GET(req: NextRequest) {  try {
+
+export async function GET(req: NextRequest) {
+  const { searchParams } = req.nextUrl;
+  const bucketType = searchParams.get("bucket");
+  const prefix = searchParams.get("prefix");
+
+  let bucketName;
+
+  if (bucketType === 'ingest') bucketName = INGEST_BUCKET;
+  else if (bucketType === 'collate') bucketName = COLLATE_BUCKET;
+
+  if (!bucketName || typeof bucketName !== "string") {
+    return NextResponse.json({ error: "Missing or invalid bucket name" }, { status: 400 });
+  }
+
+  try {
     // Grab list of files that have been uploaded.
-    const command = new ListObjectsV2Command({ Bucket: INGEST_BUCKET });
+    let params = { Bucket: bucketName };
+    // if (prefix) params[]
+
+    const command = new ListObjectsV2Command({ Bucket: bucketName });
     const { Contents } = await s3.send(command);
 
     // Process and map the file list
