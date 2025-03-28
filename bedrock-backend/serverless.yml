@@ -102,6 +102,55 @@ resources:
         FunctionName: !Ref MarathonHealthDemoCollateLambdaFunction
         Principal: events.amazonaws.com
 
+    MarathonApp:   
+      Type: AWS::Amplify::App
+      Properties:
+        Name: Marathon-Contract-Extractor
+        Repository: https://github.com/jake-altabef/marathon-demo
+        Platform: WEB
+        EnvironmentVariables:
+          - Name: AWS_REGION
+            Value: ${self:provider.region}
+          - Name: AWS_ACCESS_KEY_ID
+            Value: ${ssm:ACCESS_KEY_ID}
+          - Name: AWS_SECRET_ACCESS_KEY
+            Value: ${ssm:SECRET_ACCESS_KEY}
+          - Name: BEDROCK_INGEST_BUCKET
+            Value: !REF MarathonIngestBucket
+          - Name: BEDROCK_RESULTS_BUCKET
+            Value: !REF DemoResultsBucket
+          - Name: BEDROCK_COLLATE_BUCKET
+            Value: !REF MarathonCollateBucket
+        BuildSpec: |
+          version: 1
+          applications:
+            - frontend:
+                appRoot: marathon-demo-front-end
+                phases:
+                  preBuild:
+                    commands:
+                      - cd marathon-demo-front-end && npm install
+                  build:
+                    commands:
+                      - npm run build
+                artifacts:
+                  baseDirectory: marathon-demo-front-end/build
+                  files:
+                    - '**/*'
+                cache:
+                  paths:
+                    - marathon-demo-front-end/node_modules/**/*
+        EnableBranchAutoDeletion: true
+        OauthToken: ${ssm:GIT_HUB_OAUTH_TOKEN}
+
+    AmplifyBranch:
+      Type: AWS::Amplify::Branch
+      Properties:
+        AppId: !Ref MarathonApp
+        BranchName: main
+        EnableAutoBuild: true
+        Stage: PRODUCTION
+
 functions:
   MarathonHealthDemoIngest:
     handler: src/handlers/ingestion-handler.marathonHealthDemoIngest
@@ -127,13 +176,6 @@ functions:
       INPUT_BUCKET_NAME: !Ref DemoResultsBucket
       OUTPUT_BUCKET_NAME: !Ref MarathonCollateBucket
     events:
-      # - eventBridge:
-      #     eventBus: default
-      #     pattern:
-      #       source:
-      #         - aws.bedrock
-      #       detail-type:
-      #         - 'Bedrock Data Automation Job Succeeded'
       - eventBridge:
           eventBus: default
           pattern:

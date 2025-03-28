@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  env: {
+    AWS_REGION: process.env.AWS_REGION,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+    BEDROCK_INGEST_BUCKET: process.env.BEDROCK_INGEST_BUCKET,
+    BEDROCK_RESULTS_BUCKET: process.env.BEDROCK_RESULTS_BUCKET,
+    BEDROCK_COLLATE_BUCKET: process.env.BEDROCK_COLLATE_BUCKET,
+  }
 };
 
 export default nextConfig;
