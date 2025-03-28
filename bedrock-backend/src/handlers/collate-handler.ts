@@ -44,12 +44,19 @@ export const marathonHealthDemoCollate = async (event) => {
         } else {  // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
+            final_inference_result[field] = final_inference_result[field].concat("|", inference.value);
+            
+            if (!Array.isArray(final_explainability_info[field])) {
+              final_explainability_info[field] = [final_explainability_info[field], inference];
+            } else {
+              final_explainability_info[field].push(inference);
+            }
 
-            if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
-              logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
-              final_inference_result[field] = inference.value;
-              final_explainability_info[field] = inference;
-            } 
+            // if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
+            //   logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
+            //   final_inference_result[field] = inference.value;
+            //   final_explainability_info[field] = inference;
+            // } 
           }
         }
       }));
@@ -128,11 +135,21 @@ function prepareCsvData(explainabilityJsonData) {
   let sortedKeys = Object.keys(explainabilityJsonData).sort();
   let csvString = 'fieldName,value,success,confidence,page\r\n';
 
+  let value, confidence, page = '';
+
   sortedKeys.forEach((key) => {
     const info = explainabilityJsonData[key];
-    let value = info.value.replace(/,/g, '');
-    let confidence = Math.trunc(info.confidence * 100);
-    let page = info?.geometry?.[0].page ?? '';
+    if (Array.isArray(info)) {
+      info.forEach(instance => {
+        value += instance.value.replace(/,/g,'') + '|';
+        confidence += Math.trunc(instance.confidence * 100) + '|';
+        page += instance?.geometry?.[0].page ?? '' + '|';
+      });
+    } else {
+      value = info.value.replace(/,/g, '');
+      confidence = Math.trunc(info.confidence * 100);
+      page = info?.geometry?.[0].page ?? '';
+    }
 
     csvString += `${key},${value},${info.success},${confidence},${page}\r\n`;
   });
