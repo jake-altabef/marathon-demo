@@ -107,7 +107,7 @@ resources:
       Properties:
         Name: Marathon-Contract-Extractor
         Repository: https://github.com/jake-altabef/marathon-demo
-        Platform: WEB
+        Platform: WEB_COMPUTE
         EnvironmentVariables:
           - Name: REGION
             Value: ${self:provider.region}
@@ -146,10 +146,10 @@ resources:
     AmplifyBranch:
       Type: AWS::Amplify::Branch
       Properties:
-        AppId: !Ref MarathonApp
+        AppId: !GetAtt MarathonApp.AppId
         BranchName: main
         EnableAutoBuild: true
-        Stage: PRODUCTION
+        Framework: "Next.js"
 
 functions:
   MarathonHealthDemoIngest:
