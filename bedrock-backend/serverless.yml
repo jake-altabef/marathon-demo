@@ -116,11 +116,11 @@ resources:
           - Name: SECRET_ACCESS_KEY
             Value: ${ssm:SECRET_ACCESS_KEY}
           - Name: BEDROCK_INGEST_BUCKET
-            Value: !REF MarathonIngestBucket
+            Value: !Ref MarathonIngestBucket
           - Name: BEDROCK_RESULTS_BUCKET
-            Value: !REF DemoResultsBucket
+            Value: !Ref DemoResultsBucket
           - Name: BEDROCK_COLLATE_BUCKET
-            Value: !REF MarathonCollateBucket
+            Value: !Ref MarathonCollateBucket
         BuildSpec: |
           version: 1
           applications:
