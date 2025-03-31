@@ -9,6 +9,7 @@ type Props = {
 };
 
 const FILE_NAME = "InferenceResults.csv"
+const CONFIDENCE_INDEX = 3;
 
 const CsvTable = ({ pdfKey, resultKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
@@ -34,7 +35,7 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
   }, [pdfKey, resultKey]);
 
   return (
-    <div className="w-full overflow-x-scroll overflow-y-scroll">
+    <div className="w-full overflow-x-auto">
       {data.length > 0 ? (
         <table className="w-full border-collapse border border-gray-300 bg-white">
           <thead className="bg-gray-200">
@@ -47,9 +48,26 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
           <tbody>
             {data.slice(1).map((row, idx) => (
               <tr key={idx} className="hover:bg-gray-100">
-                {row.map((cell, cellIdx) => (
-                  <td key={cellIdx} className="border border-gray-400 p-2">{cell}</td>
-                ))}
+                {row.map((cell, cellIdx) => {
+                  let cellStyle = "";
+
+                  if (CONFIDENCE_INDEX !== null && cellIdx === CONFIDENCE_INDEX) {
+                    const confidenceValue = parseFloat(cell);
+                    if (!isNaN(confidenceValue)) {
+                      if (confidenceValue >= 80) {
+                        cellStyle = "bg-green-300"; // Green for confidence ≥ 80
+                      } else if (confidenceValue >= 50) {
+                        cellStyle = "bg-amber-300"; // Amber for 50 ≤ confidence < 80
+                      }
+                    }
+                  }
+
+                  return (
+                    <td key={cellIdx} className={`border border-gray-400 p-2 ${cellStyle}`}>
+                      {cell}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
