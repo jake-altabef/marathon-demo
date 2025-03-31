@@ -133,7 +133,7 @@ async function uploadFileToS3(bucket, key, data, contentType) {
 
 function prepareCsvData(explainabilityJsonData) {
   let sortedKeys = Object.keys(explainabilityJsonData).sort();
-  let csvString = 'fieldName,value,success,confidence,page\r\n';
+  let csvString = 'Field,Extract Value,Inference Confidence,Page\r\n';
 
   let value, confidence, page = '';
 
@@ -151,7 +151,7 @@ function prepareCsvData(explainabilityJsonData) {
       page = info?.geometry?.[0].page ?? '';
     }
 
-    csvString += `${key},${value},${info.success},${confidence},${page}\r\n`;
+    csvString += `${key},${value},${confidence},${page}\r\n`;
   });
 
   // Convert to CSV
