@@ -9,7 +9,7 @@ type Props = {
 };
 
 const FILE_NAME = "InferenceResults.csv"
-const CONFIDENCE_INDEX = 3;
+const CONFIDENCE_INDEX = 2;
 
 const CsvTable = ({ pdfKey, resultKey }: Props) => {
   const [data, setData] = useState<string[][]>([]);
