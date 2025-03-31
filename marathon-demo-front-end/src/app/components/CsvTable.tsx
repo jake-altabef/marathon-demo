@@ -5,7 +5,7 @@ import Papa from "papaparse";
 
 type Props = { 
   pdfKey: string;
-  resultKey: string;
+  resultKey?: string;
 };
 
 const FILE_NAME = "InferenceResults.csv"
@@ -15,6 +15,10 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
 
   useEffect(() => {
     const fetchCsvUrl = async () => {
+      const collatedFilesResponse = await fetch(`/api/listFiles?bucket=collate&prefix=${pdfKey}`);
+      const collatedData = await collatedFilesResponse.json();
+      const resultKey = filterDataToLatestResultSet(collatedData, pdfKey);
+
       let fileKey = `${pdfKey}/${resultKey}/${FILE_NAME}`
       const response = await fetch(`/api/csv?fileKey=${fileKey}`);
       const { url } = await response.json();
@@ -56,5 +60,11 @@ const CsvTable = ({ pdfKey, resultKey }: Props) => {
     </div>
   );
 };
+
+function filterDataToLatestResultSet(data: FileOption[], pdfKey: string) {
+  let csvFiles = data.filter((file: FileOption) => file.key.endsWith(".csv"));
+  let resultSetDates = csvFiles.map((file: FileOption) => file.key.replace(pdfKey, "").replace(file.name, "").replaceAll('/','')).sort();
+  return resultSetDates.pop();
+}
 
 export default CsvTable;
