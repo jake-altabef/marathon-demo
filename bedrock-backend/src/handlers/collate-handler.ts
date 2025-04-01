@@ -44,19 +44,19 @@ export const marathonHealthDemoCollate = async (event) => {
         } else {  // Compare latest result with best inference
           for (const field in explainability_info) {
             let inference = explainability_info[field];
-            final_inference_result[field] = final_inference_result[field].concat("|", inference.value);
+            // final_inference_result[field] = final_inference_result[field].concat("|", inference.value);
             
-            if (!Array.isArray(final_explainability_info[field])) {
-              final_explainability_info[field] = [final_explainability_info[field], inference];
-            } else {
-              final_explainability_info[field].push(inference);
-            }
+            // if (!Array.isArray(final_explainability_info[field])) {
+            //   final_explainability_info[field] = [final_explainability_info[field], inference];
+            // } else {
+            //   final_explainability_info[field].push(inference);
+            // }
 
-            // if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
-            //   logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
-            //   final_inference_result[field] = inference.value;
-            //   final_explainability_info[field] = inference;
-            // } 
+            if (isMoreConfidentAndPopulated(inference, final_explainability_info[field])) {
+              logger.info(`Updating ${field} to ${inference.value} from ${final_explainability_info[field].value}`);
+              final_inference_result[field] = inference.value;
+              final_explainability_info[field] = inference;
+            } 
           }
         }
       }));
@@ -140,6 +140,7 @@ function prepareCsvData(explainabilityJsonData) {
   sortedKeys.forEach((key) => {
     const info = explainabilityJsonData[key];
     if (Array.isArray(info)) {
+      value = '', confidence = '', page = '';
       info.forEach(instance => {
         value += instance.value.replace(/,/g,'') + '|';
         confidence += Math.trunc(instance.confidence * 100) + '|';
