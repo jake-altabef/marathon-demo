@@ -18,11 +18,23 @@ export default function Dashboard() {
 
       <div className="flex items-start space-x-4 flex-grow overflow-hidden">
         <div className="h-full w-1/2 border rounded-lg p-4 shadow bg-white overflow-y-auto">
-          <PdfViewer pdfKey={pdfKey} />
+          {
+            pdfKey === '' ? (
+              <div>PDF viewer will load when a file is selected in the dropdown.</div>
+            ) : (
+              <PdfViewer pdfKey={pdfKey} />
+            )
+          }
         </div>
         <div className="h-full w-1/2 border rounded-lg p-4 shadow bg-white overflow-y-auto">
           {/* <CsvTable pdfKey={pdfKey} resultKey={resultSetKey} /> */}
-          <CsvTable pdfKey={pdfKey} />
+          {
+            pdfKey === '' ? (
+              <div>CSV Data will load when a file is selected in the dropdown.</div>
+            ) : (
+              <CsvTable pdfKey={pdfKey} />
+            )
+          }
         </div>
       </div>
     </div>
